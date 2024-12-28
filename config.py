@@ -23,6 +23,7 @@ class appConfig:
             "report_file": "testdata\en_Reports.txt",  # Location of Report File
             "opt_ignore_existing_bonus": "False",  # Ignore Existing Bonus
             "opt_ignore_cache": "False",  # Ignore Cache
+            "opt_allow_2_percent": "False",  # Allow 2% time conversion
             "Theme": "System",  # Theme- System, Dark or Light
             "Scaling": "100%",  # Display Zoom Level
             "Colour": "blue",  # Colour Theme
@@ -33,7 +34,7 @@ class appConfig:
     def __init__(self):
         self._config = configparser.ConfigParser(interpolation=None)
         self._config.read_dict(self._CONFIG_DEFAULTS)
-        userconfdir = user_config_dir("HytekValidate", "Swimm Ontario")
+        userconfdir = user_config_dir("Hytek-Validate", "Swim Ontario")
         pathlib.Path(userconfdir).mkdir(parents=True, exist_ok=True)
         self._CONFIG_FILE = os.path.join(userconfdir, self._CONFIG_FILE)
         self._config.read(self._CONFIG_FILE)

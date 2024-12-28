@@ -9,6 +9,7 @@ from tkinter import filedialog, BooleanVar, StringVar, HORIZONTAL
 from typing import Any
 from platformdirs import user_config_dir
 from swimrankings import SwimRankings
+from sign_config import verify_config
 import pathlib
 
 # Appliction Specific Imports
@@ -57,6 +58,7 @@ class _Entry_Validation_Tab(ctk.CTkFrame):  # pylint: disable=too-many-ancestors
         self._report_file = StringVar(value=self._config.get_str("report_file"))
         self._opt_ignore_existing_bonus = BooleanVar(value=self._config.get_bool("opt_ignore_existing_bonus"))
         self._opt_ignore_cache = BooleanVar(value=self._config.get_bool("opt_ignore_cache"))
+        self._opt_allow_2_percent = BooleanVar(value=self._config.get_bool("opt_allow_2_percent"))
 
         self._swimrankings = SwimRankings()
 
@@ -78,8 +80,12 @@ class _Entry_Validation_Tab(ctk.CTkFrame):  # pylint: disable=too-many-ancestors
         right_optionsframe.rowconfigure(0, weight=1)
 
         buttonsframe = ctk.CTkFrame(self)
-        buttonsframe.grid(column=0, row=4, sticky="news")
+        buttonsframe.grid(column=0, row=4, sticky="news", padx=10, pady=10)
         buttonsframe.rowconfigure(0, weight=0)
+
+        cacheframe = ctk.CTkFrame(self)
+        cacheframe.grid(column=0, row=6, sticky="news", padx=10, pady=10)
+        cacheframe.rowconfigure(0, weight=0)
 
         # Files Section
         ctk.CTkLabel(filesframe, text="Files").grid(column=0, row=0, sticky="w", padx=10)
@@ -88,7 +94,7 @@ class _Entry_Validation_Tab(ctk.CTkFrame):  # pylint: disable=too-many-ancestors
         btn1.grid(column=0, row=1, padx=20, pady=10)
         ctk.CTkLabel(filesframe, textvariable=self._hytek_db).grid(column=1, row=1, sticky="w", padx=(0, 10))
 
-        if ADMIN_MODE:
+        if ADMIN_MODE == True:
             btn2 = ctk.CTkButton(filesframe, text="EV3 File", command=self._handle_ev3_file_browse)
             btn2.grid(column=0, row=2, padx=20, pady=10)
             ctk.CTkLabel(filesframe, textvariable=self._ev3_file).grid(column=1, row=2, sticky="w", padx=(0, 10))
@@ -105,23 +111,15 @@ class _Entry_Validation_Tab(ctk.CTkFrame):  # pylint: disable=too-many-ancestors
 
         ctk.CTkLabel(right_optionsframe, text="Program Options").grid(column=0, row=0, sticky="nw", padx=10)
 
-        ctk.CTkSwitch(
-            right_optionsframe,
-            text="Ignore Existing Bonus",
-            variable=self._opt_ignore_existing_bonus,
-            onvalue=True,
-            offvalue=False,
-            command=self._handle_opt_ignore_existing_bonus,
-        ).grid(column=0, row=2, sticky="w", padx=20, pady=10)
 
         ctk.CTkSwitch(
             right_optionsframe,
-            text="Ignore Cache",
-            variable=self._opt_ignore_cache,
+            text="Allow 2% Time Conversion",
+            variable=self._opt_allow_2_percent,
             onvalue=True,
             offvalue=False,
-            command=self._handle_opt_ignore_cache,
-        ).grid(column=0, row=3, sticky="w", padx=20, pady=10)
+            command=self._handle_opt_allow_2_percent,
+        ).grid(column=0, row=2, sticky="w", padx=20, pady=10)
 
         # Add Command Buttons
 
@@ -130,11 +128,22 @@ class _Entry_Validation_Tab(ctk.CTkFrame):  # pylint: disable=too-many-ancestors
         self.qb_report_btn = ctk.CTkButton(buttonsframe, text="Time Validation", command=self._handle_reports_btn)
         self.qb_report_btn.grid(column=0, row=1, sticky="news", padx=20, pady=10)
 
-        if ADMIN_MODE:  
+        if ADMIN_MODE == True:  
             self.meet_config_btn = ctk.CTkButton(
                 buttonsframe, text="Generate Config File", command=self._handle_generate_config_btn
-            )
+            )   
             self.meet_config_btn.grid(column=1, row=1, sticky="news", padx=20, pady=10)
+
+        # Add Cache Control Buttons (Clear current meet, Clear all meets, Reset Cache)
+        ctk.CTkLabel(cacheframe, text="Swim Rankings Cache Control").grid(column=0, row=0, sticky="w", padx=10, pady=10)
+        self.clear_current_best_times_btn = ctk.CTkButton(cacheframe, text="Clear Current Best Times", command=self._handle_clear_current_meet)
+        self.clear_current_best_times_btn.grid(column=0, row=1, sticky="w", padx=10, pady=10)
+        self.clear_all_best_times_btn = ctk.CTkButton(cacheframe, text="Clear All Best Times", command=self._handle_clear_all_meets)
+        self.clear_all_best_times_btn.grid(column=1, row=1, sticky="w", padx=10, pady=10)
+        self.reset_cache_btn = ctk.CTkButton(cacheframe, text="Reset Cache (Full)", command=self._handle_reset_cache)
+        self.reset_cache_btn.grid(column=2, row=1, sticky="w", padx=10, pady=10)
+        self.cache_stats_btn = ctk.CTkButton(cacheframe, text="Cache Stats", command=self._handle_cache_stats)
+        self.cache_stats_btn.grid(column=3, row=1, sticky="w", padx=10, pady=10)
 
     def _handle_hytek_db_browse(self) -> None:
         hytek_db = filedialog.askopenfilename(
@@ -163,13 +172,22 @@ class _Entry_Validation_Tab(ctk.CTkFrame):  # pylint: disable=too-many-ancestors
         self._ev3_file.set(ev3_file)
 
     def _handle_meet_config_file_browse(self) -> None:
-        meet_config_file = filedialog.askopenfilename(
-            filetypes=[("Meet Config File", "*.json")],
-            defaultextension=".json",
-            title="Meet Config File",
-            initialfile=os.path.basename(self._meet_config_file.get()),
-            initialdir=os.path.dirname(self._meet_config_file.get()),
-        )
+        if ADMIN_MODE == False:
+            meet_config_file = filedialog.askopenfilename(
+                filetypes=[("Meet Config File", "*.json")],
+                defaultextension=".json",
+                title="Meet Config File",
+                initialfile=os.path.basename(self._meet_config_file.get()),
+                initialdir=os.path.dirname(self._meet_config_file.get()),
+            )
+        else:
+            meet_config_file = filedialog.asksaveasfilename(
+                filetypes=[("Meet Config File", "*.json")],
+                defaultextension=".json",
+                title="Meet Config File",
+                initialfile="meet_config.json",
+                initialdir=os.path.dirname(self._meet_config_file.get()),
+            )
         if len(meet_config_file) == 0:
             return
         self._config.set_str("meet_config_file", meet_config_file)
@@ -188,16 +206,18 @@ class _Entry_Validation_Tab(ctk.CTkFrame):  # pylint: disable=too-many-ancestors
         self._config.set_str("report_file", report_file)
         self._report_file.set(report_file)
 
-    def _handle_opt_ignore_existing_bonus(self, *_arg) -> None:
-        self._config.set_bool("opt_ignore_existing_bonus", self._opt_ignore_existing_bonus.get())
-
-    def _handle_opt_ignore_cache(self, *_arg) -> None:
-        self._config.set_bool("opt_ignore_cache", self._opt_ignore_cache.get())
+    def _handle_opt_allow_2_percent(self, *_arg) -> None:
+        self._config.set_bool("opt_allow_2_percent", self._opt_allow_2_percent.get())
 
     def buttons(self, newstate) -> None:
         """Enable/disable all buttons"""
         self.qb_report_btn.configure(state=newstate)
-        self.meet_config_btn.configure(state=newstate)
+        self.clear_current_best_times_btn.configure(state=newstate)
+        self.clear_all_best_times_btn.configure(state=newstate)
+        self.reset_cache_btn.configure(state=newstate)
+        self.cache_stats_btn.configure(state=newstate)
+        if ADMIN_MODE == True:
+           self.meet_config_btn.configure(state=newstate)
 
     def _handle_reports_btn(self) -> None:
         self.buttons("disabled")
@@ -225,7 +245,35 @@ class _Entry_Validation_Tab(ctk.CTkFrame):  # pylint: disable=too-many-ancestors
             self.buttons("enabled")
             thread.join()
 
+    def _handle_clear_current_meet(self) -> None:
+        # Load, validate and read the config file to get the meet UUID
+        self.buttons("disabled")
+        config_data = verify_config(self._config.get_str("meet_config_file"), "public_key.pem")
+        if config_data is None:
+            logging.error("Invalid configuration file")
+            self.buttons("enabled")
+            return
+        try:
+            self._swimrankings.clear_cache('meet', config_data['meet_uuid'])
+        except Exception as e:
+            logging.error(f"Error clearing cache: {str(e)}")
+        finally:
+            self.buttons("enabled")
 
+    def _handle_clear_all_meets(self) -> None:
+        self.buttons("disabled")
+        self._swimrankings.clear_cache('meets')
+        self.buttons("enabled")
+
+    def _handle_reset_cache(self) -> None:
+        self.buttons("disabled")
+        self._swimrankings.clear_cache('all')
+        self.buttons("enabled")
+
+    def _handle_cache_stats(self) -> None:
+        self.buttons("disabled")
+        self._swimrankings.cache_stats()
+        self.buttons("enabled")
 
 class _Configuration_Tab(ctk.CTkFrame):  # pylint: disable=too-many-ancestors
     """Configuration Tab"""

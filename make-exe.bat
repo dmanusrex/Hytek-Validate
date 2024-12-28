@@ -6,15 +6,11 @@ setlocal EnableDelayedExpansion
 python build.py
 
 ::: Signing needs to be more dynamic...
-signtool sign /a /s MY /n "NGN Management Inc."  /tr http://timestamp.sectigo.com /fd SHA256 /td SHA256 /v dist\HytekValidate\HytekValidate.exe
+signtool sign /a /s MY /n "NGN Management Inc."  /tr http://timestamp.sectigo.com /fd SHA256 /td SHA256 /v dist\Hytek-Validate\Hytek-Validate.exe
 
 ::: Build the installer
 
-makensis HytekValidate.nsi
-
-::: Sign the installer
-
-::: signtool sign /a /s MY /n "Open Source Developer, Darren Richer" /fd SHA256 /t http://time.certum.pl /v swon-install.exe
+makensis Hytek-Validate.nsi
 
 ::: Clean up build artifacts
 rmdir /q/s build

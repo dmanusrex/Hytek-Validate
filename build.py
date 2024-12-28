@@ -15,7 +15,14 @@ from dotenv import load_dotenv
 
 print("Starting build process...\n")
 
-load_dotenv()
+load_dotenv(override=True)
+ADMIN_MODE = os.getenv("ADMIN_MODE", "False")
+PRIVATE_KEY_FILE = os.getenv("PRIVATE_KEY_FILE", "private.pem")
+PUBLIC_KEY_FILE = os.getenv("PUBLIC_KEY_FILE", "public.pem")
+SWIMRANKINGS_API_USER = os.getenv("SWIMRANKINGS_API_USER", "swimrankings")
+SWIMRANKINGS_API_PASSWORD = os.getenv("SWIMRANKINGS_API_PASSWORD", "swimrankings")
+HYTEK_DB_PASSWORD = os.getenv("HYTEK_DB_PASSWORD", "hytek")
+
 # Remove any previous build artifacts
 try:
     shutil.rmtree("build")
@@ -76,9 +83,9 @@ v = vinfo.VSVersionInfo(
                         vinfo.StringStruct("FileDescription", "Hytek Time Validation"),
                         vinfo.StringStruct("FileVersion", APP_VERSION),
                         vinfo.StringStruct("InternalName", "hytek_time_validate"),
-                        vinfo.StringStruct("ProductName", "Hytek Time Validation"),
+                        vinfo.StringStruct("ProductName", "Hytek-Validate"),
                         vinfo.StringStruct("ProductVersion", APP_VERSION),
-                        vinfo.StringStruct("OriginalFilename", "HytekTimeValidate.exe"),
+                        vinfo.StringStruct("OriginalFilename", "Hytek-Validate.exe"),
                         # Optional fields
                         vinfo.StringStruct("LegalCopyright", "(c) NGN Management Inc."),
                     ],
@@ -93,7 +100,7 @@ v = vinfo.VSVersionInfo(
         ),
     ],
 )
-with open("TimeValidate.fileinfo", "w") as f:
+with open("Hytek-Validate.fileinfo", "w") as f:
     f.write(str(v))
     f.flush()
     f.close()
@@ -101,7 +108,7 @@ with open("TimeValidate.fileinfo", "w") as f:
 print("Invoking PyInstaller to generate executable...\n")
 
 # Build it
-PyInstaller.__main__.run(["--distpath=dist", "--workpath=build", "TimeValidate.spec"])
+PyInstaller.__main__.run(["--distpath=dist", "--workpath=build", "Hytek-Validate.spec"])
 
 # Put back the original version.py
 

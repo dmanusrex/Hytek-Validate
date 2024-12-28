@@ -2,11 +2,11 @@
 # Application Specific
 .vscode/
 *.exe
-HytekValidate.ini
-HytekValidate.zip
+*.ini
+*.zip
 build/
-HytekValidate.fileinfo
-HytekValidate.log
+*.fileinfo
+*.log
 version.py
 CTkMessagebox/*.py
 sign_config.py
