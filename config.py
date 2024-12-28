@@ -17,10 +17,10 @@ class appConfig:
     # Configuration defaults if not present in the config file
     _CONFIG_DEFAULTS = {
         _INI_HEADING: {
-            "hytek_db": "testdata\2024 Western Region SC Champs-Test.mdb",  # Location of Database
-            "ev3_file": "testdata\Meet Events-2024 Western Region SC Championships-23Feb2024-001.ev3",  # Location of EV3 File
-            "meet_config_file": "testdata\Western Region SC Championships-2024.json",  # Location of Config File
-            "report_file": "testdata\en_Reports.txt",  # Location of Report File
+            "hytek_db": "sample.mdb",  # Location of Database
+            "ev3_file": "sample.ev3",  # Location of EV3 File
+            "meet_config_file": "sample.json",  # Location of Config File
+            "report_file": "sample.xlsx",  # Location of Report File
             "opt_ignore_existing_bonus": "False",  # Ignore Existing Bonus
             "opt_ignore_cache": "False",  # Ignore Cache
             "opt_allow_2_percent": "False",  # Allow 2% time conversion
