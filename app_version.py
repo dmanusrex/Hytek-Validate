@@ -118,7 +118,7 @@ def git_semver(wrv: str) -> str:
 
 def latest() -> Optional[ReleaseInfo]:
     """Retrieves the latest release info"""
-    rlist = releases("dmanusrex/TimeValidate")
+    rlist = releases("dmanusrex/Hytek-Validate")
     if len(rlist) == 0:
         return None
     return highest_semver(rlist)
